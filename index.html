@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>☕ TwidyBill v1.3</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{--bg:#f4efe8;--card:#fff;--text:#3d2518;--accent:#7b4a2f}
+.dark{--bg:#1b1714;--card:#2a241f;--text:#f2e6d8;--accent:#c58b62}
+body{font-family:Segoe UI,Arial;margin:0;background:var(--bg);color:var(--text)}
+.wrap{max-width:1100px;margin:auto;padding:20px}
+.card{background:var(--card);padding:24px;border-radius:24px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+.hero{text-align:center}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat{background:var(--card);padding:15px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;box-sizing:border-box}
+.product{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
+button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer}
+.primary{background:var(--accent);color:#fff}
+.total{padding:18px;border-radius:16px;background:rgba(150,100,50,.08);margin-top:15px}
+.big{font-size:42px;font-weight:bold;color:var(--accent)}
+.paygrid{display:grid;grid-template-columns:30% 70%;gap:20px}
+.qris{max-width:400px;width:100%}
+.privacy{margin-top:10px;padding:12px;background:#f7efe7;border-radius:12px}
+.watermark{text-align:center;font-size:12px;opacity:.7;margin-top:12px}
+.compact-item{padding:10px 0;border-bottom:1px dashed #ccc}
+footer{text-align:center;padding:25px;color:#888}
+#capture{
+  width:420px;
+  margin:auto;
+}
+@media(max-width:800px){.grid,.stats,.paygrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card hero">
+<h1>☕ TwidyBill</h1>
+<p><b>Hitung tagihan setelah diskon tanpa ribet buka Excel.</b></p>
+<p>✔ GoFood ✔ GrabFood ✔ ShopeeFood ✔ Patungan kantor</p>
+<p>Generate tagihan siap kirim dalam hitungan detik.</p>
+<button onclick="toggleDark()">🌙 Dark Mode</button>
+</div>
+
+<div class="stats">
+<div class="stat">💸 Total Sebelum Diskon<br><h3 id="s1">Rp0</h3></div>
+<div class="stat">🏷 Total Pembayaran<br><h3 id="s2">Rp0</h3></div>
+</div>
+
+<div class="card">
+<h2>Generator Tagihan</h2>
+<div class="grid">
+<input id="username" placeholder="Username/Outlet (opsional)">
+<input id="subtotal" type="number" placeholder="Subtotal (Total Sebelum Diskon) - WAJIB DI ISI">
+<input id="totalBayar" type="number" placeholder="Total Bayar - WAJIB DI ISI">
+<input id="rekNama" placeholder="Keterangan (opsional)">
+<input id="rekNo" placeholder="Jenis Pembayaran - Cash/QRIS/Transfer/Gopay dll (opsional)">
+<input id="gopay" placeholder="No Rekening/E-wallet (opsional)">
+</div>
+
+<p><b>Upload QRIS (opsional)</b></p>
+<input type="file" id="qrisUpload" accept="image/*">
+
+<div class="privacy">
+🔒 <b>Privasi Terjaga</b><br>
+TwidyBill tidak menyimpan nomor rekening, nomor e-wallet, QRIS pengguna, maupun catatan transaksi pengunjung.
+</div>
+
+<h3>Produk/Item (WAJIB DI ISI)</h3>
+<div id="products"></div>
+<button onclick="addProduct()">+ Tambah Produk</button>
+<button class="primary" onclick="generate()">Generate</button>
+</div>
+
+<div id="hasil"></div>
+<footer>Made with ☕ by Twidy Shop</footer>
+</div>
+
+<script>
+let qrisData='';
+qrisUpload.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=x=>qrisData=x.target.result;r.readAsDataURL(f)};
+function addProduct(){let d=document.createElement('div');d.className='product';d.innerHTML='<input class="nama" placeholder="NAMA PRODUK"><input class="harga" type="number" placeholder="HARGA">';products.appendChild(d)}
+for(let i=0;i<4;i++)addProduct();
+function rp(n){return 'Rp'+Math.round(n).toLocaleString('id-ID')}
+
+function generate(){
+ let subtotal=+document.getElementById('subtotal').value, total=+document.getElementById('totalBayar').value;
+ if(!subtotal||!total)return alert('Isi subtotal dan total bayar');
+ let factor=total/subtotal,rows='',wa='☕ TwidyBill\n\n';
+ document.querySelectorAll('.product').forEach(r=>{
+  let n=r.querySelector('.nama').value,h=+r.querySelector('.harga').value;
+  if(n&&h){
+   let netto=Math.round(h*factor);
+
+wa += `${n} : ${rp(netto)}\n`;
+
+rows += `<div class="compact-item">
+<b>${n}</b><br>
+${rp(h)} → <b>${rp(netto)}</b>
+</div>`;
+  }
+ });
+ s1.textContent=rp(subtotal); 
+s2.textContent=rp(total);
+
+window.waText =
+ wa +
+ '\nSubtotal: ' + rp(subtotal) +
+ '\nTotal Bayar: ' + rp(total);
+
+ hasil.innerHTML=`<div class="card" id="capture">
+ <h1 style="text-align:center">☕ RINCIAN TAGIHAN</h1>
+ <p style="text-align:center">👤 ${username.value||'Username'} | 📅 ${new Date().toLocaleDateString('id-ID')}</p>
+
+ ${rows}
+
+ <div class="total">
+ <div>Subtotal: ${rp(subtotal)}</div>
+ <div class="big">${rp(total)}</div>
+ <div>TOTAL BAYAR</div>
+ </div>
+
+ <div class="card">
+ <h3 align="center">PEMBAYARAN TAGIHAN</h3>
+ <div class="paygrid">
+ <div>
+ <p><b>${rekNama.value||'-'}</b></p>
+ <p>Jenis Pembayaran: ${rekNo.value||'-'}</p>
+ <p>No Rekening / E-wallet: ${gopay.value||'-'}</p>
+ </div>
+ <div align="center">
+ ${qrisData?'<img src="'+qrisData+'" class="qris">':''}
+ </div>
+ </div>
+ </div>
+
+ <div class="watermark">
+ ☕ Generated by TwidyBill<br>
+ Made with ☕ by Twidy Shop
+ </div>
+ </div>
+
+ <button class="primary" onclick="downloadPNG()">📸 Export PNG</button>
+
+<button onclick="copyWA()">📋 Copy Clipboard</button>
+
+<button onclick="shareWA()">📤 Share WhatsApp</button>`;
+}
+
+const subtotalEl=document.getElementById('subtotal');
+
+function downloadPNG(){
+ html2canvas(document.getElementById('capture'),{scale:4,useCORS:true}).then(c=>{
+ let a=document.createElement('a');
+ a.href=c.toDataURL();
+ a.download='twidybill-v13.png';
+ a.click();
+ });
+}
+function copyWA(){
+ navigator.clipboard.writeText(window.waText || '');
+ alert('Hasil disalin ke clipboard');
+}
+
+function shareWA(){
+ window.open(
+  'https://wa.me/?text=' +
+  encodeURIComponent(window.waText || ''),
+  '_blank'
+ );
+}
+
+function toggleDark(){
+ document.body.classList.toggle('dark')
+}
+</script>
+</body>
+</html>
