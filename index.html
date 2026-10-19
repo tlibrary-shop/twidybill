@@ -1,36 +1,66 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>☕ TwidyBill v1.3</title>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>☕ TwidyBill Suite - Generator & Auto OCR Struk</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{--bg:#f4efe8;--card:#fff;--text:#3d2518;--accent:#7b4a2f}
 .dark{--bg:#1b1714;--card:#2a241f;--text:#f2e6d8;--accent:#c58b62}
-body{font-family:Segoe UI,Arial;margin:0;background:var(--bg);color:var(--text)}
+body{font-family:Segoe UI,Arial;margin:0;background:var(--bg);color:var(--text);transition: background 0.3s, color 0.3s;}
 .wrap{max-width:1100px;margin:auto;padding:20px}
 .card{background:var(--card);padding:24px;border-radius:24px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,.08)}
 .hero{text-align:center}
+
+.nav-menu { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; z-index: 10; position: relative; }
+.nav-btn { background: #e5e7eb; color: #374151; padding: 12px 24px; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+.nav-btn.active { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .stat{background:var(--card);padding:15px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-input{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;box-sizing:border-box}
+input, select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;box-sizing:border-box;font-size:14px;background:inherit;color:inherit;}
 .product{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
-button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer}
+button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:600}
 .primary{background:var(--accent);color:#fff}
 .total{padding:18px;border-radius:16px;background:rgba(150,100,50,.08);margin-top:15px}
 .big{font-size:42px;font-weight:bold;color:var(--accent)}
 .paygrid{display:grid;grid-template-columns:30% 70%;gap:20px}
 .qris{max-width:400px;width:100%}
-.privacy{margin-top:10px;padding:12px;background:#f7efe7;border-radius:12px}
+.privacy{margin-top:10px;padding:12px;background:rgba(150,100,50,.05);border-radius:12px;font-size:13px}
 .watermark{text-align:center;font-size:12px;opacity:.7;margin-top:12px}
 .compact-item{padding:10px 0;border-bottom:1px dashed #ccc}
 footer{text-align:center;padding:25px;color:#888}
-#capture{
-  width:420px;
-  margin:auto;
+
+.drop-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 25px; text-align: center; background: inherit; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+.drop-zone:hover { border-color: var(--accent); opacity: 0.9; }
+.preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+.preview-item { position: relative; display: inline-block; }
+.preview-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
+.preview-item .pdf-badge { width: 70px; height: 70px; background: #fee2e2; color: #b91c1c; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border-radius: 6px; border: 1px solid #fca5a5; }
+.remove-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+.table-container { overflow-x: auto; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; background: inherit; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ccc; vertical-align: middle; }
+th { background: rgba(150,100,50,.1); font-weight: 600; }
+th.text-right, td.text-right { text-align: right; }
+th.text-center, td.text-center { text-align: center; }
+.table-input { width: 100%; padding: 6px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background: inherit; color: inherit; }
+.table-input.qty { width: 55px; text-align: center; }
+.table-input.price { width: 110px; text-align: right; }
+.text-accent { color: var(--accent); font-weight: 600; }
+.unit-price { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+.delete-row { background: none; border: none; color: #ef4444; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+#capture, #captureOCR {
+  width: 420px;
+  margin: auto;
 }
 @media(max-width:800px){.grid,.stats,.paygrid{grid-template-columns:1fr}}
 </style>
@@ -38,143 +68,552 @@ footer{text-align:center;padding:25px;color:#888}
 <body>
 <div class="wrap">
 <div class="card hero">
-<h1>☕ TwidyBill</h1>
-<p><b>Hitung tagihan setelah diskon tanpa ribet buka Excel.</b></p>
-<p>✔ GoFood ✔ GrabFood ✔ ShopeeFood ✔ Patungan kantor</p>
-<p>Generate tagihan siap kirim dalam hitungan detik.</p>
-<button onclick="toggleDark()">🌙 Dark Mode</button>
+<h1>☕ TwidyBill Suite</h1>
+<p><b>Platform Hitung Tagihan & Split Bill Fleksibel</b></p>
+<div style="margin-top: 15px;">
+<button onclick="toggleDark()" class="nav-btn" style="padding: 8px 16px;">🌙 Toggle Dark Mode</button>
+</div>
 </div>
 
+<!-- TOMBOL NAVIGASI MENU -->
+<div class="nav-menu">
+<button class="nav-btn active" onclick="switchTab('manual', this)">📝 Menu 1: Input Manual (TwidyBill v1.3)</button>
+<button class="nav-btn" onclick="switchTab('auto', this)">⚡ Menu 2: Auto Scan PDF / Nota (AI Vision)</button>
+</div>
+
+<!-- TAB 1: MANUAL -->
+<div id="tab-manual" class="tab-content active">
 <div class="stats">
 <div class="stat">💸 Total Sebelum Diskon<br><h3 id="s1">Rp0</h3></div>
 <div class="stat">🏷 Total Pembayaran<br><h3 id="s2">Rp0</h3></div>
 </div>
 
 <div class="card">
-<h2>Generator Tagihan</h2>
+<h2>Generator Tagihan Manual</h2>
 <div class="grid">
 <input id="username" placeholder="Username/Outlet (opsional)">
-<input id="subtotal" type="number" placeholder="Subtotal (Total Sebelum Diskon) - WAJIB DI ISI">
-<input id="totalBayar" type="number" placeholder="Total Bayar - WAJIB DI ISI">
+<input id="subtotal" type="number" placeholder="Subtotal (Total Sebelum Diskon) - WAJIB">
+<input id="totalBayar" type="number" placeholder="Total Bayar - WAJIB">
 <input id="rekNama" placeholder="Keterangan (opsional)">
-<input id="rekNo" placeholder="Jenis Pembayaran - Cash/QRIS/Transfer/Gopay dll (opsional)">
-<input id="gopay" placeholder="No Rekening/E-wallet (opsional)">
+<input id="rekNo" placeholder="Jenis Pembayaran - Cash/QRIS/Transfer dll (opsional)">
+<input id="gopay" placeholder="No Rekening / E-wallet (opsional)">
 </div>
 
-<p><b>Upload QRIS (opsional)</b></p>
+<p style="margin-top:15px;"><b>Upload QRIS (opsional)</b></p>
 <input type="file" id="qrisUpload" accept="image/*">
 
 <div class="privacy">
 🔒 <b>Privasi Terjaga</b><br>
-TwidyBill tidak menyimpan nomor rekening, nomor e-wallet, QRIS pengguna, maupun catatan transaksi pengunjung.
+TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
 </div>
 
-<h3>Produk/Item (WAJIB DI ISI)</h3>
+<h3>Produk / Item</h3>
 <div id="products"></div>
+<div style="margin-top: 15px; display: flex; gap: 10px;">
 <button onclick="addProduct()">+ Tambah Produk</button>
-<button class="primary" onclick="generate()">Generate</button>
+<button class="primary" onclick="generateManual()">Generate Tagihan</button>
+</div>
 </div>
 
-<div id="hasil"></div>
+<div id="hasilManual"></div>
+</div>
+
+<!-- TAB 2: AUTO OCR -->
+<div id="tab-auto" class="tab-content">
+<div class="card">
+<h2>Auto Scan PDF / Screenshot Nota (AI Vision)</h2>
+<p style="font-size: 13px; opacity: 0.8; margin-bottom: 15px;">Upload file PDF GoFood/ShopeeFood atau screenshot nota. AI akan mendeteksi daftar item otomatis!</p>
+
+<input type="hidden" id="apiKey" value="AQ.Ab8RN6Le77vAppT7o4wMiSVRSW_D7NpnVEuTcAiIOau9nzbhVA">
+
+<div class="form-group">
+    <label><b>Upload / Paste (Ctrl+V) File / Screenshot:</b></label>
+    <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
+        <p><span><b>Klik untuk pilih file</b></span> atau drag & drop ke sini</p>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple style="display:none">
+    </div>
+    <div id="previewContainer" class="preview-container"></div>
+</div>
+
+<div class="grid" style="margin-top: 15px;">
+    <div>
+        <label><b>Target Total Dibayar di Nota:</b> (Rp)</label>
+        <input type="number" id="targetTotal" class="form-control" value="79500" oninput="updateOCRUI()" style="margin-top: 5px;">
+    </div>
+    <div style="display: flex; align-items: flex-end;">
+        <button onclick="processFilesAI()" id="processBtn" class="primary" style="width:100%;">Proses dengan AI Vision</button>
+    </div>
+</div>
+
+<div style="margin-top: 15px;">
+    <label><b>Catatan / Keterangan (Opsional):</b></label>
+    <input type="text" id="globalNote" placeholder="Cth: Transfer ke BCA 1234567890" style="margin-top: 5px;">
+</div>
+<p id="statusText" style="font-size: 12px; text-align: center; margin-top: 10px; font-weight: 500;"></p>
+</div>
+
+<div class="card">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <h3>Daftar Produk Terdeteksi</h3>
+    <button onclick="addOCRRow()" class="primary" style="padding: 8px 14px; font-size: 13px;">+ Tambah Manual</button>
+</div>
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 55px;" class="text-center">Jml</th>
+                <th>Nama Produk</th>
+                <th>Pemesan</th>
+                <th class="text-right">Harga Asli</th>
+                <th class="text-right">Tagihan Netto</th>
+                <th class="text-center">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="ocrTableBody">
+            <tr><td colspan="6" class="text-center" style="opacity: 0.6; padding: 25px;">Belum ada data. Silakan proses dokumen dulu.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; flex-wrap: wrap; gap: 15px;">
+    <div style="font-size: 13px;">
+        Total Harga Asli: <span id="ocrSumOriginal" style="font-weight:bold;">Rp0</span> | 
+        Total Netto: <span id="ocrSumNet" class="text-accent" style="font-weight:bold;">Rp0</span>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="copyOCRSummary()" style="background:#374151; color:#fff;">📋 Copy Teks</button>
+        <button onclick="exportOCRImage()" class="primary">📸 Download Gambar</button>
+    </div>
+</div>
+</div>
+
+<!-- KOTAK RAHASIA UNTUK EXPORT STRUK PORTRAIT -->
+<div id="exportCardOCR" style="padding: 25px; background: #ffffff; color: #333; width: 420px; position: absolute; top: -9999px; left: -9999px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+    <div style="text-align: center; border-bottom: 2px dashed #e5e7eb; padding-bottom: 15px; margin-bottom: 15px;">
+        <h2 style="font-size: 18px; font-weight: bold; color: #1f2937; margin-bottom: 4px;">☕ RINCIAN TAGIHAN NETTO</h2>
+        <p style="font-size: 12px; color: #6b7280;">Dihitung proporsional dari struk online</p>
+    </div>
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+            <tr style="background: #f8fafc; color: #475569;">
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: center; width: 40px;">Jml</th>
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: left;">Menu & Pemesan</th>
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: right;">Tagihan Netto</th>
+            </tr>
+        </thead>
+        <tbody id="exportOCRTableBody"></tbody>
+    </table>
+    <div style="margin-top: 15px; border-top: 2px dashed #e5e7eb; padding-top: 12px;">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 6px;">
+            <span>Total Harga Asli:</span>
+            <span id="exportSumOriginal" style="font-weight: 600;">Rp0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: var(--accent);">
+            <span>Total Pembayaran Netto:</span>
+            <span id="exportSumNet">Rp0</span>
+        </div>
+    </div>
+    <div id="exportNoteContainer" style="margin-top: 15px; padding: 10px 12px; background: rgba(150,100,50,.08); border: 1px solid rgba(150,100,50,.2); border-radius: 6px; font-size: 12px; color: var(--accent); display: none;"></div>
+    <div class="watermark" style="margin-top: 15px;">
+        ☕ Generated by TwidyBill Suite<br>
+        Made with ☕ by Twidy Shop
+    </div>
+</div>
+
+</div>
+
 <footer>Made with ☕ by Twidy Shop</footer>
 </div>
 
 <script>
-let qrisData='';
-qrisUpload.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=x=>qrisData=x.target.result;r.readAsDataURL(f)};
-function addProduct(){let d=document.createElement('div');d.className='product';d.innerHTML='<input class="nama" placeholder="NAMA PRODUK"><input class="harga" type="number" placeholder="HARGA">';products.appendChild(d)}
-for(let i=0;i<4;i++)addProduct();
-function rp(n){return 'Rp'+Math.round(n).toLocaleString('id-ID')}
+// ==== FUNGSI DASAR & NAVIGASI ====
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-function generate(){
- let subtotal=+document.getElementById('subtotal').value, total=+document.getElementById('totalBayar').value;
- if(!subtotal||!total)return alert('Isi subtotal dan total bayar');
- let factor=total/subtotal,rows='',wa='☕ TwidyBill\n\n';
- document.querySelectorAll('.product').forEach(r=>{
-  let n=r.querySelector('.nama').value,h=+r.querySelector('.harga').value;
-  if(n&&h){
-   let netto=Math.round(h*factor);
-
-wa += `${n} : ${rp(netto)}\n`;
-
-rows += `<div class="compact-item">
-<b>${n}</b><br>
-${rp(h)} → <b>${rp(netto)}</b>
-</div>`;
-  }
- });
- s1.textContent=rp(subtotal); 
-s2.textContent=rp(total);
-
-window.waText =
- wa +
- '\nSubtotal: ' + rp(subtotal) +
- '\nTotal Bayar: ' + rp(total);
-
- hasil.innerHTML=`<div class="card" id="capture">
- <h1 style="text-align:center">☕ RINCIAN TAGIHAN</h1>
- <p style="text-align:center">👤 ${username.value||'Username'} | 📅 ${new Date().toLocaleDateString('id-ID')}</p>
-
- ${rows}
-
- <div class="total">
- <div>Subtotal: ${rp(subtotal)}</div>
- <div class="big">${rp(total)}</div>
- <div>TOTAL BAYAR</div>
- </div>
-
- <div class="card">
- <h3 align="center">PEMBAYARAN TAGIHAN</h3>
- <div class="paygrid">
- <div>
- <p><b>${rekNama.value||'-'}</b></p>
- <p>Jenis Pembayaran: ${rekNo.value||'-'}</p>
- <p>No Rekening / E-wallet: ${gopay.value||'-'}</p>
- </div>
- <div align="center">
- ${qrisData?'<img src="'+qrisData+'" class="qris">':''}
- </div>
- </div>
- </div>
-
- <div class="watermark">
- ☕ Generated by TwidyBill<br>
- Made with ☕ by Twidy Shop
- </div>
- </div>
-
- <button class="primary" onclick="downloadPNG()">📸 Export PNG</button>
-
-<button onclick="copyWA()">📋 Copy Clipboard</button>
-
-<button onclick="shareWA()">📤 Share WhatsApp</button>`;
-}
-
-const subtotalEl=document.getElementById('subtotal');
-
-function downloadPNG(){
- html2canvas(document.getElementById('capture'),{scale:4,useCORS:true}).then(c=>{
- let a=document.createElement('a');
- a.href=c.toDataURL();
- a.download='twidybill-v13.png';
- a.click();
- });
-}
-function copyWA(){
- navigator.clipboard.writeText(window.waText || '');
- alert('Hasil disalin ke clipboard');
-}
-
-function shareWA(){
- window.open(
-  'https://wa.me/?text=' +
-  encodeURIComponent(window.waText || ''),
-  '_blank'
- );
+function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tabId).classList.add('active');
+    btnElement.classList.add('active');
 }
 
 function toggleDark(){
- document.body.classList.toggle('dark')
+    document.body.classList.toggle('dark');
+}
+
+function rp(n){ 
+    return 'Rp' + Math.round(n).toLocaleString('id-ID'); 
+}
+
+// ==== JAVASCRIPT TAB 1 (MANUAL) ====
+let qrisData = '';
+const qrisUpload = document.getElementById('qrisUpload');
+if(qrisUpload) {
+    qrisUpload.onchange = e => {
+        let f = e.target.files[0];
+        if(!f) return;
+        let r = new FileReader();
+        r.onload = x => qrisData = x.target.result;
+        r.readAsDataURL(f);
+    };
+}
+
+function addProduct(){
+    let d = document.createElement('div');
+    d.className = 'product';
+    d.innerHTML = '<input class="nama" placeholder="NAMA PRODUK"><input class="harga" type="number" placeholder="HARGA">';
+    document.getElementById('products').appendChild(d);
+}
+for(let i=0; i<4; i++) addProduct();
+
+function generateManual(){
+    let subtotal = +document.getElementById('subtotal').value; 
+    let total = +document.getElementById('totalBayar').value;
+    if(!subtotal || !total) return alert('Isi subtotal dan total bayar terlebih dahulu!');
+    
+    let factor = total / subtotal;
+    let rows = '';
+    let wa = "☕ TwidyBill\n\n";
+    
+    document.querySelectorAll('#tab-manual .product').forEach(r => {
+        let n = r.querySelector('.nama').value;
+        let h = +r.querySelector('.harga').value;
+        if(n && h){
+            let netto = Math.round(h * factor);
+            wa += n + " : " + rp(netto) + "\n";
+            rows += '<div class="compact-item"><b>'+n+'</b><br>'+rp(h)+' → <b>'+rp(netto)+'</b></div>';
+        }
+    });
+    
+    document.getElementById('s1').textContent = rp(subtotal); 
+    document.getElementById('s2').textContent = rp(total);
+    window.waText = wa + "\nSubtotal: " + rp(subtotal) + "\nTotal Bayar: " + rp(total);
+
+    document.getElementById('hasilManual').innerHTML = `
+        <div class="card" id="capture">
+            <h1 style="text-align:center">☕ RINCIAN TAGIHAN</h1>
+            <p style="text-align:center">👤 ${document.getElementById('username').value||'Username'} | 📅 ${new Date().toLocaleDateString('id-ID')}</p>
+            ${rows}
+            <div class="total">
+                <div>Subtotal: ${rp(subtotal)}</div>
+                <div class="big">${rp(total)}</div>
+                <div>TOTAL BAYAR</div>
+            </div>
+            <div class="card" style="margin-top:15px;">
+                <h3 align="center">PEMBAYARAN TAGIHAN</h3>
+                <div class="paygrid">
+                    <div>
+                        <p><b>${document.getElementById('rekNama').value||'-'}</b></p>
+                        <p>Jenis Pembayaran: ${document.getElementById('rekNo').value||'-'}</p>
+                        <p>No Rek / E-wallet: ${document.getElementById('gopay').value||'-'}</p>
+                    </div>
+                    <div align="center">
+                        ${qrisData ? '<img src="'+qrisData+'" class="qris">' : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="watermark">☕ Generated by TwidyBill<br>Made with ☕ by Twidy Shop</div>
+        </div>
+        <div style="text-align:center; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:15px;">
+            <button class="primary" onclick="downloadManualPNG()">📸 Export PNG</button>
+            <button onclick="copyManualWA()" style="background:#374151; color:#fff;">📋 Copy Clipboard</button>
+            <button onclick="shareManualWA()" style="background:#25d366; color:#fff;">📤 Share WhatsApp</button>
+        </div>`;
+}
+
+function downloadManualPNG(){
+    const captureEl = document.getElementById('capture');
+    if(!captureEl) return;
+    html2canvas(captureEl, {scale:4, useCORS:true}).then(c => {
+        let a = document.createElement('a');
+        a.href = c.toDataURL();
+        a.download = 'twidybill-manual.png';
+        a.click();
+    });
+}
+function copyManualWA(){
+    navigator.clipboard.writeText(window.waText || '');
+    alert('Hasil disalin ke clipboard');
+}
+function shareManualWA(){
+    window.open('https://wa.me/?text=' + encodeURIComponent(window.waText || ''), '_blank');
+}
+
+
+// ==== JAVASCRIPT TAB 2 (AUTO OCR) ====
+let ocrItems = [];
+let selectedFiles = [];
+
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files.length > 0) {
+        handleOCRFiles(Array.from(e.target.files));
+    }
+});
+
+window.addEventListener('paste', (e) => {
+    if(!document.getElementById('tab-auto').classList.contains('active')) return;
+    const clipboardItems = e.clipboardData.items;
+    let pastedFiles = [];
+    for (let i = 0; i < clipboardItems.length; i++) {
+        if (clipboardItems[i].type.indexOf('image') !== -1) {
+            const blob = clipboardItems[i].getAsFile();
+            if (blob) pastedFiles.push(blob);
+        }
+    }
+    if (pastedFiles.length > 0) handleOCRFiles(pastedFiles);
+});
+
+async function handleOCRFiles(files) {
+    for (let file of files) {
+        if (file.type === 'application/pdf') {
+            await convertPdfToImages(file);
+        } else if (file.type.startsWith('image/')) {
+            const b64 = await fileToBase64(file);
+            selectedFiles.push({ type: 'image', data: b64, mimeType: file.type, name: file.name });
+        }
+    }
+    renderOCRPreviews();
+}
+
+async function convertPdfToImages(file) {
+    const arrayBuffer = await file.arrayAsBuffer ? await file.arrayAsBuffer() : await new Response(file).arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdfDoc = await loadingTask.promise;
+
+    for (let i = 1; i <= pdfDoc.numPages; i++) {
+        const page = await pdfDoc.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/png');
+        selectedFiles.push({ type: 'image', data: dataUrl.split(',')[1], mimeType: 'image/png', name: `${file.name} (Hal ${i})` });
+    }
+}
+
+async function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+}
+
+function renderOCRPreviews() {
+    const container = document.getElementById('previewContainer');
+    container.innerHTML = '';
+    selectedFiles.forEach((fileObj, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'preview-item';
+        
+        if (fileObj.mimeType === 'application/pdf' || fileObj.name.includes('Hal')) {
+            wrapper.innerHTML = '<div class="pdf-badge">PDF</div>';
+        } else {
+            wrapper.innerHTML = '<img src="data:' + fileObj.mimeType + ';base64,' + fileObj.data + '">';
+        }
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '&times;';
+        removeBtn.className = 'remove-btn';
+        removeBtn.onclick = function(evt) {
+            evt.stopPropagation();
+            selectedFiles.splice(idx, 1);
+            renderOCRPreviews();
+        };
+        wrapper.appendChild(removeBtn);
+        container.appendChild(wrapper);
+    });
+}
+
+async function processFilesAI() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) return alert('API Key belum terpasang!');
+    if (selectedFiles.length === 0) return alert('Pilih atau upload file PDF / screenshot nota terlebih dahulu!');
+
+    const statusText = document.getElementById('statusText');
+    const btn = document.getElementById('processBtn');
+    statusText.innerText = "Menganalisis dokumen dengan AI Vision...";
+    btn.disabled = true;
+
+    try {
+        let imageParts = selectedFiles.map(f => ({
+            inlineData: { data: f.data, mimeType: f.mimeType }
+        }));
+
+        const promptText = `Ekstrak daftar produk makanan/minuman yang dipesan. Tentukan jumlah (qty), nama menu, nama pemesan (default 'Umum'), dan total harga asli per item (price). Jika ada informasi "Total pembayaran", ekstrak sebagai 'detected_total'.
+Berikan output HANYA JSON valid tanpa markdown, struktur:
+{"detected_total": 79500,"items": [{"name": "Kopi", "qty": 2, "user": "Umum", "price": 46000}]}`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [...imageParts, { text: promptText }] }] })
+        });
+
+        const data = await response.json();
+        if (!data.candidates) throw new Error("Gagal mendapatkan respons dari AI.");
+
+        let rawText = data.candidates[0].content.parts[0].text;
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsedData = JSON.parse(rawText);
+        
+        if (parsedData.detected_total > 0) document.getElementById('targetTotal').value = parsedData.detected_total;
+
+        if (parsedData.items) {
+            ocrItems = parsedData.items.map(it => ({
+                name: it.name || 'Menu',
+                qty: parseInt(it.qty) || 1,
+                user: it.user || 'Umum',
+                price: parseFloat(it.price) || 0
+            }));
+        }
+
+        updateOCRUI();
+        statusText.innerText = "Berhasil memproses dokumen!";
+        btn.disabled = false;
+    } catch (err) {
+        console.error(err);
+        statusText.innerText = "Terjadi kesalahan.";
+        btn.disabled = false;
+        alert("Gagal memproses dokumen: " + err.message);
+    }
+}
+
+function updateOCRUI() {
+    const tbody = document.getElementById('ocrTableBody');
+    tbody.innerHTML = '';
+    
+    const targetTotal = parseFloat(document.getElementById('targetTotal').value) || 0;
+    const totalOrig = ocrItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    let totalNet = 0;
+
+    if (ocrItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="opacity: 0.6; padding: 25px;">Belum ada item terdeteksi.</td></tr>`;
+        document.getElementById('ocrSumOriginal').innerText = 'Rp0';
+        document.getElementById('ocrSumNet').innerText = 'Rp0';
+        return;
+    }
+
+    ocrItems.forEach((item, index) => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
+        totalNet += net;
+
+        let netHtml = `Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (qty > 1) {
+            netHtml += `<div class="unit-price">(@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</div>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-center"><input type="number" min="1" value="${qty}" onchange="updateOCRItem(${index}, 'qty', this.value)" class="table-input qty"></td>
+            <td><input type="text" value="${item.name}" onchange="updateOCRItem(${index}, 'name', this.value)" class="table-input"></td>
+            <td><input type="text" value="${item.user}" onchange="updateOCRItem(${index}, 'user', this.value)" class="table-input"></td>
+            <td class="text-right"><input type="number" value="${price}" onchange="updateOCRItem(${index}, 'price', this.value)" class="table-input price"></td>
+            <td class="text-right text-accent">${netHtml}</td>
+            <td class="text-center"><button onclick="deleteOCRItem(${index})" class="delete-row">&times;</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById('ocrSumOriginal').innerText = 'Rp' + totalOrig.toLocaleString('id-ID');
+    document.getElementById('ocrSumNet').innerText = 'Rp' + totalNet.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function updateOCRItem(index, field, value) {
+    if (field === 'price') ocrItems[index][field] = parseFloat(value) || 0;
+    else if (field === 'qty') ocrItems[index][field] = parseInt(value) || 1;
+    else ocrItems[index][field] = value;
+    updateOCRUI();
+}
+
+function deleteOCRItem(index) {
+    ocrItems.splice(index, 1);
+    updateOCRUI();
+}
+
+function addOCRRow() {
+    ocrItems.push({ name: "Menu Baru", qty: 1, user: "Pemesan", price: 25000 });
+    updateOCRUI();
+}
+
+function copyOCRSummary() {
+    const targetTotal = parseFloat(document.getElementById('targetTotal').value) || 0;
+    const totalOrig = ocrItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    const globalNote = document.getElementById('globalNote').value.trim();
+    
+    let text = "☕ *Rincian Tagihan Netto*\n\n";
+    ocrItems.forEach(item => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
+        text += `• ${qty}x ${item.name} (${item.user}) : Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (qty > 1) text += ` (@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+        text += "\n";
+    });
+    text += "\nTotal Akhir: Rp" + targetTotal.toLocaleString('id-ID');
+    if (globalNote) text += "\n\n💡 *Catatan:* " + globalNote;
+
+    navigator.clipboard.writeText(text).then(() => alert('Berhasil menyalin ringkasan ke clipboard!'));
+}
+
+function exportOCRImage() {
+    const targetTotal = parseFloat(document.getElementById('targetTotal').value) || 0;
+    const totalOrig = ocrItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    const globalNote = document.getElementById('globalNote').value.trim();
+    const exportBody = document.getElementById('exportOCRTableBody');
+    exportBody.innerHTML = '';
+
+    ocrItems.forEach((item, idx) => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
+        
+        let netText = `Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (qty > 1) {
+            netText += `<div><small style="opacity: 0.7;">(@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</small></div>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.style.background = idx % 2 === 0 ? 'transparent' : 'rgba(150,100,50,.03)';
+        tr.innerHTML = `
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: center; font-weight: 500;">${qty}</td>
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px;">
+                <div style="font-weight: 600;">${item.name}</div>
+                <div style="font-size: 11px; opacity: 0.7;">👤 ${item.user || 'Umum'}</div>
+            </td>
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: right; font-weight: bold; color: var(--accent);">${netText}</td>
+        `;
+        exportBody.appendChild(tr);
+    });
+
+    document.getElementById('exportSumOriginal').innerText = 'Rp' + totalOrig.toLocaleString('id-ID');
+    document.getElementById('exportSumNet').innerText = 'Rp' + targetTotal.toLocaleString('id-ID');
+
+    const exportNoteDiv = document.getElementById('exportNoteContainer');
+    if (globalNote) {
+        exportNoteDiv.innerText = "💡 Catatan: " + globalNote;
+        exportNoteDiv.style.display = 'block';
+    } else {
+        exportNoteDiv.style.display = 'none';
+    }
+
+    const card = document.getElementById('exportCardOCR');
+    card.style.left = '0px';
+    card.style.top = '0px';
+
+    html2canvas(card, { scale: 2, useCORS: true }).then(canvas => {
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+        let a = document.createElement('a');
+        a.download = 'rincian_netto_portrait.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    });
 }
 </script>
 </body>
