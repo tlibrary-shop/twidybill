@@ -439,9 +439,12 @@ async function processFilesAI() {
             inlineData: { data: f.data, mimeType: f.mimeType }
         }));
 
-        const promptText = `Ekstrak daftar produk makanan/minuman yang dipesan. Tentukan jumlah (qty), nama menu, nama pemesan (default 'Umum'), dan total harga asli per item (price). Jika ada informasi "Total pembayaran", ekstrak sebagai 'detected_total'.
+        const promptText = `Ekstrak daftar produk makanan/minuman yang dipesan dari dokumen bukti pembayaran ini.
+PENTING: Jika ada dua harga pada produk (harga normal/coret dan harga diskon aktif), AMBIL HANYA harga utama yang aktif/berwarna tebal (misal tertulis Rp20.400, abaikan harga coret Rp25.500 di bawahnya).
+Tentukan jumlah (qty), nama menu, nama pemesan (default 'Umum'), dan total harga aktif per item (price, misal qty 4 = 81600).
+Jika ada informasi "Total pembayaran" atau subtotal di bagian bawah, ekstrak sebagai 'detected_total'.
 Berikan output HANYA JSON valid tanpa markdown, struktur:
-{"detected_total": 79500,"items": [{"name": "Kopi", "qty": 2, "user": "Umum", "price": 46000}]}`;
+{"detected_total": 82100,"items": [{"name": "Nasi Ayam Geprek Sambal Bawang", "qty": 1, "user": "candraabet01", "price": 20400}]}`;
 
         // MENGGUNAKAN NETLIFY FUNCTION / BACKEND SERVERLESS
         const response = await fetch(`/.netlify/functions/gemini`, {
