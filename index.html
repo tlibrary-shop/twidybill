@@ -124,8 +124,6 @@ TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
 <h2>Auto Scan PDF / Screenshot Nota (AI Vision)</h2>
 <p style="font-size: 13px; opacity: 0.8; margin-bottom: 15px;">Upload file PDF GoFood/ShopeeFood atau screenshot nota. AI akan mendeteksi daftar item otomatis!</p>
 
-<input type="hidden" id="apiKey" value="AQ.Ab8RN6LhCS0zSU53QK4J5j-4LDnfKpuIBAd2sBSXwMH_SR5xFQ">
-
 <div class="form-group">
     <label><b>Upload / Paste (Ctrl+V) File / Screenshot:</b></label>
     <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
@@ -429,8 +427,6 @@ function renderOCRPreviews() {
 }
 
 async function processFilesAI() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) return alert('API Key belum terpasang!');
     if (selectedFiles.length === 0) return alert('Pilih atau upload file PDF / screenshot nota terlebih dahulu!');
 
     const statusText = document.getElementById('statusText');
@@ -447,7 +443,8 @@ async function processFilesAI() {
 Berikan output HANYA JSON valid tanpa markdown, struktur:
 {"detected_total": 79500,"items": [{"name": "Kopi", "qty": 2, "user": "Umum", "price": 46000}]}`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
+        // MENGGUNAKAN NETLIFY FUNCTION / BACKEND SERVERLESS
+        const response = await fetch(`/.netlify/functions/gemini`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [...imageParts, { text: promptText }] }] })
