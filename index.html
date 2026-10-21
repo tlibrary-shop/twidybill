@@ -24,7 +24,7 @@ body{font-family:Segoe UI,Arial;margin:0;background:var(--bg);color:var(--text);
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .stat{background:var(--card);padding:15px;border-radius:16px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.05)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-input, select{width:100%;padding:12px;border-radius:12px;border:1px solid #ccc;box-sizing:border-box;font-size:14px;background:inherit;color:inherit;}
+input, select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #ccc;box-sizing:border-box;font-size:13px;background:inherit;color:inherit;}
 .product{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
 button{padding:12px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:600}
 .primary{background:var(--accent);color:#fff}
@@ -46,17 +46,19 @@ footer{text-align:center;padding:25px;color:#888}
 .remove-btn { position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 .table-container { overflow-x: auto; border: 1px solid #ccc; border-radius: 8px; margin-top: 10px; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; background: inherit; }
-th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ccc; vertical-align: middle; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; background: inherit; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #ccc; vertical-align: middle; }
 th { background: rgba(150,100,50,.1); font-weight: 600; }
 th.text-right, td.text-right { text-align: right; }
 th.text-center, td.text-center { text-align: center; }
-.table-input { width: 100%; padding: 6px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background: inherit; color: inherit; }
-.table-input.qty { width: 55px; text-align: center; }
-.table-input.price { width: 110px; text-align: right; }
+.table-input { width: 100%; padding: 6px 8px; font-size: 12px; border: 1px solid #ccc; border-radius: 4px; background: inherit; color: inherit; }
+.table-input.qty { width: 45px; text-align: center; }
+.table-input.price { width: 100px; text-align: right; }
 .text-accent { color: var(--accent); font-weight: 600; }
 .unit-price { font-size: 11px; opacity: 0.8; margin-top: 2px; }
 .delete-row { background: none; border: none; color: #ef4444; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+.summary-box { background: rgba(150,100,50,.06); border: 1px solid rgba(150,100,50,.2); border-radius: 12px; padding: 15px; margin-top: 15px; }
 
 #capture, #captureOCR {
   width: 420px;
@@ -159,10 +161,10 @@ TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
     <table>
         <thead>
             <tr>
-                <th style="width: 55px;" class="text-center">Jml</th>
-                <th>Nama Produk</th>
+                <th style="width: 45px;" class="text-center">Jml</th>
+                <th>Nama Produk & Catatan</th>
                 <th>Pemesan</th>
-                <th class="text-right">Harga Asli</th>
+                <th class="text-right">Bruto (Asli)</th>
                 <th class="text-right">Tagihan Netto</th>
                 <th class="text-center">Aksi</th>
             </tr>
@@ -173,9 +175,15 @@ TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
     </table>
 </div>
 
+<!-- KOTAK RINGKASAN TOTAL PER PEMESAN -->
+<div class="summary-box">
+    <h4 style="margin: 0 0 8px 0; font-size: 14px; color: var(--accent);">👤 Rekap Total Netto Per Pemesan:</h4>
+    <div id="perUserSummary" style="font-size: 13px; opacity: 0.9;">Belum ada data pemesan.</div>
+</div>
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; flex-wrap: wrap; gap: 15px;">
     <div style="font-size: 13px;">
-        Total Harga Asli: <span id="ocrSumOriginal" style="font-weight:bold;">Rp0</span> | 
+        Total Harga Bruto: <span id="ocrSumOriginal" style="font-weight:bold;">Rp0</span> | 
         Total Netto: <span id="ocrSumNet" class="text-accent" style="font-weight:bold;">Rp0</span>
     </div>
     <div style="display: flex; gap: 10px;">
@@ -194,16 +202,22 @@ TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
     <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
         <thead>
             <tr style="background: #f8fafc; color: #475569;">
-                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: center; width: 40px;">Jml</th>
-                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: left;">Menu & Pemesan</th>
-                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: right;">Tagihan Netto</th>
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: center; width: 35px;">Jml</th>
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: left;">Menu, Catatan & Pemesan</th>
+                <th style="border-bottom: 2px solid #e2e8f0; padding: 8px; text-align: right;">Netto</th>
             </tr>
         </thead>
         <tbody id="exportOCRTableBody"></tbody>
     </table>
+    
+    <div id="exportUserSummaryBox" style="margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 12px;">
+        <div style="font-weight: bold; margin-bottom: 4px; color: #1f2937;">Rekap Per Pemesan:</div>
+        <div id="exportPerUserSummary"></div>
+    </div>
+
     <div style="margin-top: 15px; border-top: 2px dashed #e5e7eb; padding-top: 12px;">
         <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 6px;">
-            <span>Total Harga Asli:</span>
+            <span>Total Harga Bruto:</span>
             <span id="exportSumOriginal" style="font-weight: 600;">Rp0</span>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: var(--accent);">
@@ -440,11 +454,25 @@ async function processFilesAI() {
         }));
 
         const promptText = `Ekstrak daftar produk makanan/minuman yang dipesan dari dokumen bukti pembayaran ini.
-PENTING: Jika ada dua harga pada produk (harga normal/coret dan harga diskon aktif), AMBIL HANYA harga utama yang aktif/berwarna tebal (misal tertulis Rp20.400, abaikan harga coret Rp25.500 di bawahnya).
-Tentukan jumlah (qty), nama menu, nama pemesan (default 'Umum'), dan total harga aktif per item (price, misal qty 4 = 81600).
-Jika ada informasi "Total pembayaran" atau subtotal di bagian bawah, ekstrak sebagai 'detected_total'.
+PENTING:
+1. Jika ada dua harga pada produk (harga normal/coret dan harga diskon aktif), AMBIL HANYA harga utama yang aktif/berwarna tebal (misal tertulis Rp20.400, abaikan harga coret Rp25.500 di bawahnya).
+2. Ekstrak juga catatan/keterangan tambahan jika ada di bawah nama menu (misal: "Catatan Tambahan: sambal pisah"). Jika tidak ada, kosongkan string-nya ("").
+3. Tentukan jumlah (qty), nama menu, nama pemesan (user), dan total harga aktif per item (price, misal qty 1 = 20400, qty 4 = 81600).
+4. Jika ada informasi "Total pembayaran" atau subtotal di bagian bawah, ekstrak sebagai 'detected_total'.
+
 Berikan output HANYA JSON valid tanpa markdown, struktur:
-{"detected_total": 82100,"items": [{"name": "Nasi Ayam Geprek Sambal Bawang", "qty": 1, "user": "candraabet01", "price": 20400}]}`;
+{
+  "detected_total": 82100,
+  "items": [
+    {
+      "name": "Nasi Ayam Geprek Sambal Bawang",
+      "note": "Catatan Tambahan: sambal pisah",
+      "qty": 1,
+      "user": "arevan.pn",
+      "price": 20400
+    }
+  ]
+}`;
 
         // MENGGUNAKAN NETLIFY FUNCTION / BACKEND SERVERLESS
         const response = await fetch(`/.netlify/functions/gemini`, {
@@ -465,6 +493,7 @@ Berikan output HANYA JSON valid tanpa markdown, struktur:
         if (parsedData.items) {
             ocrItems = parsedData.items.map(it => ({
                 name: it.name || 'Menu',
+                note: it.note || '',
                 qty: parseInt(it.qty) || 1,
                 user: it.user || 'Umum',
                 price: parseFloat(it.price) || 0
@@ -490,10 +519,14 @@ function updateOCRUI() {
     const totalOrig = ocrItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
     let totalNet = 0;
 
+    // Objek untuk merekap total netto per pemesan
+    let userTotals = {};
+
     if (ocrItems.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="opacity: 0.6; padding: 25px;">Belum ada item terdeteksi.</td></tr>`;
         document.getElementById('ocrSumOriginal').innerText = 'Rp0';
         document.getElementById('ocrSumNet').innerText = 'Rp0';
+        document.getElementById('perUserSummary').innerText = 'Belum ada data pemesan.';
         return;
     }
 
@@ -503,6 +536,10 @@ function updateOCRUI() {
         const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
         totalNet += net;
 
+        const userName = item.user || 'Umum';
+        if (!userTotals[userName]) userTotals[userName] = 0;
+        userTotals[userName] += net;
+
         let netHtml = `Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         if (qty > 1) {
             netHtml += `<div class="unit-price">(@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</div>`;
@@ -511,14 +548,28 @@ function updateOCRUI() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="text-center"><input type="number" min="1" value="${qty}" onchange="updateOCRItem(${index}, 'qty', this.value)" class="table-input qty"></td>
-            <td><input type="text" value="${item.name}" onchange="updateOCRItem(${index}, 'name', this.value)" class="table-input"></td>
-            <td><input type="text" value="${item.user}" onchange="updateOCRItem(${index}, 'user', this.value)" class="table-input"></td>
+            <td>
+                <input type="text" value="${item.name}" onchange="updateOCRItem(${index}, 'name', this.value)" class="table-input" style="margin-bottom: 4px;">
+                <input type="text" value="${item.note || ''}" placeholder="Catatan opsional" onchange="updateOCRItem(${index}, 'note', this.value)" class="table-input" style="font-size: 11px; opacity: 0.8;">
+            </td>
+            <td><input type="text" value="${userName}" onchange="updateOCRItem(${index}, 'user', this.value)" class="table-input"></td>
             <td class="text-right"><input type="number" value="${price}" onchange="updateOCRItem(${index}, 'price', this.value)" class="table-input price"></td>
             <td class="text-right text-accent">${netHtml}</td>
             <td class="text-center"><button onclick="deleteOCRItem(${index})" class="delete-row">&times;</button></td>
         `;
         tbody.appendChild(tr);
     });
+
+    // Render Ringkasan Per Pemesan
+    let userSummaryHtml = '';
+    let exportUserSummaryHtml = '';
+    for (let u in userTotals) {
+        let uNet = userTotals[u];
+        userSummaryHtml += `• <b>${u}</b>: Rp${uNet.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>`;
+        exportUserSummaryHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>👤 ${u}:</span><span style="font-weight: 600; color: var(--accent);">Rp${uNet.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>`;
+    }
+    document.getElementById('perUserSummary').innerHTML = userSummaryHtml;
+    document.getElementById('exportPerUserSummary').innerHTML = exportUserSummaryHtml;
 
     document.getElementById('ocrSumOriginal').innerText = 'Rp' + totalOrig.toLocaleString('id-ID');
     document.getElementById('ocrSumNet').innerText = 'Rp' + totalNet.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -537,7 +588,7 @@ function deleteOCRItem(index) {
 }
 
 function addOCRRow() {
-    ocrItems.push({ name: "Menu Baru", qty: 1, user: "Pemesan", price: 25000 });
+    ocrItems.push({ name: "Menu Baru", note: "", qty: 1, user: "Pemesan", price: 25000 });
     updateOCRUI();
 }
 
@@ -551,11 +602,13 @@ function copyOCRSummary() {
         const price = parseFloat(item.price) || 0;
         const qty = parseInt(item.qty) || 1;
         const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
-        text += `• ${qty}x ${item.name} (${item.user}) : Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        text += `• ${qty}x ${item.name} (${item.user})`;
+        if(item.note) text += `\n  _${item.note}_`;
+        text += `\n  Netto: Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         if (qty > 1) text += ` (@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
-        text += "\n";
+        text += "\n\n";
     });
-    text += "\nTotal Akhir: Rp" + targetTotal.toLocaleString('id-ID');
+    text += "Total Akhir: Rp" + targetTotal.toLocaleString('id-ID');
     if (globalNote) text += "\n\n💡 *Catatan:* " + globalNote;
 
     navigator.clipboard.writeText(text).then(() => alert('Berhasil menyalin ringkasan ke clipboard!'));
@@ -584,7 +637,8 @@ function exportOCRImage() {
             <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: center; font-weight: 500;">${qty}</td>
             <td style="border-bottom: 1px solid #e5e7eb; padding: 8px;">
                 <div style="font-weight: 600;">${item.name}</div>
-                <div style="font-size: 11px; opacity: 0.7;">👤 ${item.user || 'Umum'}</div>
+                ${item.note ? `<div style="font-size: 10px; color: #64748b; font-style: italic;">${item.note}</div>` : ''}
+                <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">👤 ${item.user || 'Umum'} (Bruto: Rp${price.toLocaleString('id-ID')})</div>
             </td>
             <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: right; font-weight: bold; color: var(--accent);">${netText}</td>
         `;
