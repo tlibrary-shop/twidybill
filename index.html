@@ -186,9 +186,10 @@ TwidyBill tidak menyimpan data rekening atau QRIS pengguna.
         Total Harga Bruto: <span id="ocrSumOriginal" style="font-weight:bold;">Rp0</span> | 
         Total Netto: <span id="ocrSumNet" class="text-accent" style="font-weight:bold;">Rp0</span>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button onclick="copyOCRSummary()" style="background:#374151; color:#fff;">📋 Copy Teks</button>
         <button onclick="exportOCRImage()" class="primary">📸 Download Gambar</button>
+        <button onclick="shareOCRImage()" style="background:#25d366; color:#fff;">📤 Share Gambar</button>
     </div>
 </div>
 </div>
@@ -701,6 +702,79 @@ function exportOCRImage() {
         a.href = canvas.toDataURL('image/png');
         a.click();
     });
+}
+
+async function shareOCRImage() {
+    const targetTotal = parseFloat(document.getElementById('targetTotal').value) || 0;
+    const totalOrig = ocrItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0);
+    const globalNote = document.getElementById('globalNote').value.trim();
+    const exportBody = document.getElementById('exportOCRTableBody');
+    exportBody.innerHTML = '';
+
+    ocrItems.forEach((item, idx) => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty) || 1;
+        const net = totalOrig > 0 ? (targetTotal / totalOrig) * price : 0;
+        
+        let netText = `Rp${net.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (qty > 1) {
+            netText += `<div><small style="opacity: 0.7;">(@Rp${(net/qty).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</small></div>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.style.background = idx % 2 === 0 ? 'transparent' : 'rgba(150,100,50,.03)';
+        tr.innerHTML = `
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: center; font-weight: 500;">${qty}</td>
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px;">
+                <div style="font-weight: 600;">${item.name}</div>
+                ${item.note ? `<div style="font-size: 10px; color: #64748b; font-style: italic;">${item.note}</div>` : ''}
+                <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">👤 ${item.user || 'Umum'} (Bruto: Rp${price.toLocaleString('id-ID')})</div>
+            </td>
+            <td style="border-bottom: 1px solid #e5e7eb; padding: 8px; text-align: right; font-weight: bold; color: var(--accent);">${netText}</td>
+        `;
+        exportBody.appendChild(tr);
+    });
+
+    document.getElementById('exportSumOriginal').innerText = 'Rp' + totalOrig.toLocaleString('id-ID');
+    document.getElementById('exportSumNet').innerText = 'Rp' + targetTotal.toLocaleString('id-ID');
+
+    const exportNoteDiv = document.getElementById('exportNoteContainer');
+    if (globalNote) {
+        exportNoteDiv.innerText = "💡 Catatan: " + globalNote;
+        exportNoteDiv.style.display = 'block';
+    } else {
+        exportNoteDiv.style.display = 'none';
+    }
+
+    const card = document.getElementById('exportCardOCR');
+    card.style.left = '0px';
+    card.style.top = '0px';
+
+    try {
+        const canvas = await html2canvas(card, { scale: 2, useCORS: true });
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) return alert('Gagal memproses gambar.');
+            const file = new File([blob], 'rincian_netto.png', { type: 'image/png' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Rincian Tagihan Netto',
+                    text: 'Berikut rincian tagihan netto.'
+                });
+            } else {
+                alert('Browser kamu tidak mendukung fitur Share Gambar langsung. Silakan gunakan tombol Download Gambar.');
+            }
+        }, 'image/png');
+    } catch (err) {
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+        console.error(err);
+        alert('Gagal memproses gambar untuk di-share.');
+    }
 }
 </script>
 </body>
