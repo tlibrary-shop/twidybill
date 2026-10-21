@@ -394,14 +394,13 @@ async function convertPdfToImages(file) {
 
     for (let i = 1; i <= pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i);
-        // Tweak kompresi agar dijamin tidak timeout di Netlify
-        const viewport = page.getViewport({ scale: 1.0 }); 
+        const viewport = page.getViewport({ scale: 1.2 }); 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
         canvas.width = viewport.width;
         await page.render({ canvasContext: context, viewport: viewport }).promise;
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
         selectedFiles.push({ type: 'image', data: dataUrl.split(',')[1], mimeType: 'image/jpeg', name: `${file.name} (Hal ${i})` });
     }
 }
@@ -414,7 +413,8 @@ async function fileToBase64(file) {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800; // Dikompres extra kecil
+                // Optimal untuk Screenshot Nota: Max width 1000px & JPEG 0.7 (ringan + super tajam untuk OCR)
+                const MAX_WIDTH = 1000; 
                 let width = img.width;
                 let height = img.height;
 
@@ -427,7 +427,7 @@ async function fileToBase64(file) {
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.6).split(',')[1]);
+                resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
             };
             img.onerror = error => reject(error);
             img.src = event.target.result;
@@ -463,11 +463,11 @@ function renderOCRPreviews() {
 }
 
 async function processFilesAI() {
-    if (selectedFiles.length === 0) return alert('Pilih atau upload file PDF / screenshot nota terlebih dahulu!');
+    if (selectedFiles.length === 0) return alert('Pilih atau upload screenshot nota terlebih dahulu!');
 
     const statusText = document.getElementById('statusText');
     const btn = document.getElementById('processBtn');
-    statusText.innerText = "Menganalisis dokumen dengan AI Vision...";
+    statusText.innerText = "Menganalisis screenshot dengan AI Vision...";
     btn.disabled = true;
 
     try {
@@ -482,7 +482,7 @@ PENTING:
 3. Tentukan jumlah (qty), nama menu, nama pemesan (user), dan total harga aktif per item (price, misal qty 1 = 20400, qty 4 = 81600).
 4. Jika ada informasi "Total pembayaran" atau subtotal di bagian bawah, ekstrak sebagai 'detected_total'.
 
-Berikan output HANYA JSON valid tanpa markdown, struktur:
+Berikan output HANYA JSON valid dengan struktur:
 {
   "detected_total": 82100,
   "items": [
@@ -496,19 +496,28 @@ Berikan output HANYA JSON valid tanpa markdown, struktur:
   ]
 }`;
 
-        // Menggunakan Endpoint Netlify Functions (Aman & Clean)
+        // Mengirim request dengan mode responseMimeType JSON agar respon AI instan tanpa delay
+        const payload = {
+            contents: [{ parts: [...imageParts, { text: promptText }] }],
+            generationConfig: {
+                responseMimeType: "application/json"
+            }
+        };
+
         const response = await fetch(`/api/gemini`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [...imageParts, { text: promptText }] }] })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status} (Server Netlify timeout, coba gunakan gambar yang lebih sedikit/kecil)`);
+            throw new Error(`HTTP Error: ${response.status} (Gagal menghubungi API Vercel)`);
         }
 
         const data = await response.json();
-        if (!data.candidates) throw new Error("Gagal mendapatkan respons dari AI.");
+        if (!data.candidates || !data.candidates[0].content) {
+            throw new Error("Gagal mendapatkan respons dari AI.");
+        }
 
         let rawText = data.candidates[0].content.parts[0].text;
         rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
