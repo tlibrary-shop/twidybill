@@ -1,33 +1,27 @@
-// Aktifkan Edge Runtime (Proxy mode super cepat)
-export const runtime = 'edge';
+export const maxDuration = 60; // Timeout diperpanjang jadi 60 detik
 
-export default async function handler(req) {
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ message: 'Method Not Allowed' }), { status: 405 });
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const API_KEY = process.env.GEMINI_API_KEY;
-    // Di Edge runtime, req dibaca sebagai stream text mentah
-    const body = await req.text(); 
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY belum dipasang di Vercel Environment Variables!' });
+    }
 
     try {
-        // Tetap pakai Gemini 3.1 Flash Lite!
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${API_KEY}`, {
+        const payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: body
+            body: payload
         });
-
-        if (!response.ok) {
-            throw new Error(`Google API Error: ${response.status}`);
-        }
 
         const data = await response.json();
-        return new Response(JSON.stringify(data), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return res.status(response.status).json(data);
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.toString() }), { status: 500 });
+        return res.status(500).json({ error: error.toString() });
     }
 }
