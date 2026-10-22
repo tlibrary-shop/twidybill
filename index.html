@@ -759,15 +759,32 @@ async function shareOCRImage() {
             if (!blob) return alert('Gagal memproses gambar.');
             const file = new File([blob], 'rincian_netto.png', { type: 'image/png' });
 
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Rincian Tagihan Netto',
-                    text: 'Berikut rincian tagihan netto.'
-                });
-            } else {
-                alert('Browser kamu tidak mendukung fitur Share Gambar langsung. Silakan gunakan tombol Download Gambar.');
+            try {
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Rincian Tagihan Netto',
+                        text: 'Berikut rincian tagihan netto.'
+                    });
+                    return;
+                }
+            } catch (shareError) {
+                // If the user deliberately closes the native share sheet, do not trigger a download.
+                if (shareError && shareError.name === 'AbortError') return;
+                console.warn('Share gambar tidak tersedia, beralih ke download:', shareError);
             }
+
+            // Web Share API may be blocked by browser support or iframe permissions.
+            // Keep the action useful by downloading the generated image instead.
+            const imageUrl = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageUrl;
+            downloadLink.download = 'rincian_netto.png';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+            setTimeout(() => URL.revokeObjectURL(imageUrl), 1500);
+            alert('Share gambar langsung tidak tersedia di browser atau embed ini. Gambar sudah diunduh; kamu bisa membagikannya lewat WhatsApp atau aplikasi lain.');
         }, 'image/png');
     } catch (err) {
         card.style.left = '-9999px';
